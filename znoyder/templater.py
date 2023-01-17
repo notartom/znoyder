@@ -37,6 +37,28 @@ class NestedDumper(yaml.Dumper):
         return super(NestedDumper, self).increase_indent(flow, False)
 
 
+def unique_dicts(list_of_dicts):
+    uuids = set()
+    filtered_list = []
+
+    for job_dict in list_of_dicts:
+        tmp_dict = job_dict.copy()
+        # if 'branches'
+        # del tmp_dict['branch']
+
+        uuid = hash(str(tmp_dict))
+
+        if uuid not in uuids:
+            uuids.add(uuid)
+            filtered_list.append(job_dict)
+
+    # print(filtered_list)
+    return filtered_list
+
+
+j2env.filters['unique_dicts'] = unique_dicts
+
+
 def generate_zuul_project_template(path: str, name: str, pipelines: dict):
     template = j2env.get_template('zuul-project-template.j2')
 

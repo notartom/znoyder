@@ -4,10 +4,10 @@
     {%- for pipeline, jobs in pipelines | dictsort %}
     {{ pipeline }}:
       jobs:
-        {%- for job in jobs | sort(attribute='name') %}
+        {%- for job in jobs | sort(attribute='name,parameters.branches') | unique_dicts %}
         - {{ job.name }}:
-            branches: {{ job.branch }}
-            voting: {{ job.voting }}
+            branches: {{ job.parameters.pop('branches') }}
+            voting: {{ job.parameters.pop('voting', 'false') }}
             {%- for key, value in job.parameters | dictsort %}
             {{ key }}: {{ value | tojson }}
             {%- endfor -%}

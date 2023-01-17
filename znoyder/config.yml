@@ -20,6 +20,12 @@
 # Branches config
 #
 branches:
+  # 'osp-16.1':
+  #   downstream: '^rhos-16.1-trunk-patches$'
+  #   upstream: 'stable/train'
+  # 'osp-16.2':
+  #   downstream: '^rhos-16.2-trunk-patches$'
+  #   upstream: 'stable/train'
   'osp-17.0':
     downstream: '^rhos-17.0-trunk-patches$'
     upstream: 'stable/wallaby'
@@ -37,6 +43,7 @@ branches:
 #
 include:
   'osp-17.0':
+    # 'tempest-full-py3': 'tempest-full-py3'
     'nova-tox-functional-py38': 'osp-rpm-functional-py39'
     'openstack-tox-functional': 'osp-rpm-functional-py39'
     'openstack-tox-functional-py38': 'osp-rpm-functional-py39'
@@ -147,6 +154,7 @@ override:
           rhos_release_args: '17.0'
           rhos_release_extra_repos: 'rhelosp-17.0-trunk-brew'
       'osp-rpm-functional-py39':
+        # to_pipeline: 'daily'
         voting: true
         branches: ~
         required-projects: ~
@@ -166,6 +174,7 @@ override:
           rhos_release_args: '17.1'
           rhos_release_extra_repos: 'rhelosp-17.1-trunk-brew'
       'osp-rpm-functional-py39':
+        # to_pipeline: 'daily'
         voting: true
         branches: ~
         required-projects: ~
@@ -1547,15 +1556,103 @@ override:
 copy:
   /.*/:  # every project
     /.*/:  # every tag
+      - 'osp-rpm-functional-py39':
+          from: 'check'
+          to: 'gate'
+      - 'osp-rpm-functional-py39':
+          from: 'check'
+          to: 'weekly'
       - 'osp-rpm-py39':
           from: 'check'
           to: 'gate'
       - 'osp-rpm-py39':
           from: 'check'
           to: 'weekly'
+      - 'osp-rpm-py39':
+          from: 'check'
+          to: 'weekly'
+          as: 'osp-rpm-py36'
+          branches: '^rhos-16.1-trunk-patches$'
+          REPLACE:
+            - old: 'wallaby'
+              new: 'train'
+            - old: 'rhelosp-17.0-trunk-brew'
+              new: 'rhelosp-16.1-unittest'
+            - old: 'rhelosp-17.1-trunk-brew'
+              new: 'rhelosp-16.1-unittest'
+            - old: '17.0'
+              new: '16.1-cdn'
+            - old: '17.1'
+              new: '16.1-cdn'
+            - old: 'py39'
+              new: 'py36'
+            - old: 'pip'
+              new: 'pip3'
+      - 'osp-rpm-py39':
+          from: 'check'
+          to: 'weekly'
+          as: 'osp-rpm-py36'
+          branches: '^rhos-16.2-trunk-patches$'
+          REPLACE:
+            - old: 'wallaby'
+              new: 'train'
+            - old: 'rhelosp-17.0-trunk-brew'
+              new: 'rhelosp-16.2-unittest'
+            - old: 'rhelosp-17.1-trunk-brew'
+              new: 'rhelosp-16.2-unittest'
+            - old: '17.0'
+              new: '16.2-cdn'
+            - old: '17.1'
+              new: '16.2-cdn'
+            - old: 'py39'
+              new: 'py36'
+            - old: 'pip'
+              new: 'pip3'
       - 'osp-tox-pep8':
           from: 'check'
           to: 'gate'
       - 'osp-tox-pep8':
           from: 'check'
           to: 'weekly'
+      - 'osp-tox-pep8':
+          from: 'check'
+          to: 'weekly'
+          branches: '^rhos-16.1-trunk-patches$'
+          vars:
+            tox_install_bindep: false
+          REPLACE:
+            - old: 'wallaby'
+              new: 'train'
+            - old: 'rhelosp-17.0-trunk-brew'
+              new: 'rhelosp-16.1-unittest'
+            - old: 'rhelosp-17.1-trunk-brew'
+              new: 'rhelosp-16.1-unittest'
+            - old: '17.0'
+              new: '16.1-cdn'
+            - old: '17.1'
+              new: '16.1-cdn'
+            - old: 'py39'
+              new: 'py36'
+            - old: 'pip'
+              new: 'pip3'
+      - 'osp-tox-pep8':
+          from: 'check'
+          to: 'weekly'
+          branches: '^rhos-16.2-trunk-patches$'
+          vars:
+            tox_install_bindep: false
+          REPLACE:
+            - old: 'wallaby'
+              new: 'train'
+            - old: 'rhelosp-17.0-trunk-brew'
+              new: 'rhelosp-16.2-unittest'
+            - old: 'rhelosp-17.1-trunk-brew'
+              new: 'rhelosp-16.2-unittest'
+            - old: '17.0'
+              new: '16.2-cdn'
+            - old: '17.1'
+              new: '16.2-cdn'
+            - old: 'py39'
+              new: 'py36'
+            - old: 'pip'
+              new: 'pip3'

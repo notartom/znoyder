@@ -49,9 +49,12 @@ def new_jobs_from_map_entry(entry: dict) -> ZuulJob:
 def update_jobs_from_map_entry(jobs: list, entry: dict) -> list:
     job_name, job_options = deepcopy(entry)
     pipeline = job_options.pop('pipeline', '/.*/')  # any pipeline by default
+    to_pipeline = job_options.pop('to_pipeline', None)
 
     for index, job in enumerate(jobs):
         if match(job.name, job_name) and match(job.pipeline, pipeline):
+            if to_pipeline:
+                jobs[index].pipeline = to_pipeline
             merge_dicts(jobs[index].parameters, job_options, override=True)
             drop_nones_from_dict(jobs[index].parameters)
             sort_dict_by_keys(jobs[index].parameters)
@@ -64,6 +67,8 @@ def copy_jobs_from_map_entry(jobs: list, entry: dict) -> list:
     pipeline = job_options.pop('from', '/.*/')  # any pipeline by default
     new_pipeline = job_options.pop('to', None)
     new_name = job_options.pop('as', job_name)
+
+    replace = job_options.pop('REPLACE', None)
 
     if all([job_name == new_name, not new_pipeline,
             'branches' not in job_options]):
@@ -86,7 +91,34 @@ def copy_jobs_from_map_entry(jobs: list, entry: dict) -> list:
             if new_pipeline:
                 new_job.pipeline = new_pipeline
 
+            def nested_replace(obj, old, new):
+                if type(obj) is str:
+                    obj = obj.replace(old, new)
+                elif type(obj) is bool:
+                    pass  # Do nothing
+                elif type(obj) is list:
+                    obj = [nested_replace(o, old, new) for o in obj]
+                elif type(obj) is dict:
+                    obj = {nested_replace(k, old, new):
+                           nested_replace(v, old, new)
+                           for k, v in obj.items()}
+                else:
+                    LOG.error(f'Unexpected type to change: {type(obj)}')
+                return obj
+
+            if replace:
+                for r in replace:
+                    # print(r)
+                    # print(new_job.parameters)
+                    new_job.parameters = nested_replace(new_job.parameters,
+                                                        r['old'], r['new'])
+                    # print(new_job.parameters)
+                    # print()
+
             new_jobs.append(new_job)
+            # print(job.name, job.pipeline, job.parameters, '->',
+            #       new_job.name, new_job.pipeline, new_job.parameters)
+            # break
 
     jobs.extend(new_jobs)
 
